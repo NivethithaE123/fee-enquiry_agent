@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fee Inquiry Agent - V.S.B. Engineering College</title>
+    <!-- Google Fonts for premium typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for beautiful icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar / Configuration panel -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <h2>V.S.B. Agent</h2>
+            </div>
+            
+            <!-- Student Profile Section -->
+            <div class="student-profile">
+                <div class="profile-avatar">
+                    <i class="fa-solid fa-user-graduate"></i>
+                </div>
+                <div class="profile-info">
+                    <h3 class="student-name">{{ student_name }}</h3>
+                    <p class="student-dept">{{ student_dept }}</p>
+                </div>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <div class="nav-menu" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem; margin-bottom: 1.5rem;">
+                <a href="{{ url_for('index') }}" class="secondary-btn active-nav" style="text-decoration: none; justify-content: flex-start; padding-left: 1.25rem; background: var(--accent-gradient); color: white; border: none; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);">
+                    <i class="fa-solid fa-comments"></i> AI Fee Chatbot
+                </a>
+                <a href="{{ url_for('scholarship_checker') }}" class="secondary-btn" style="text-decoration: none; justify-content: flex-start; padding-left: 1.25rem;">
+                    <i class="fa-solid fa-award"></i> Scholarship Checker
+                </a>
+                <a href="{{ url_for('previous_scholarships') }}" class="secondary-btn" style="text-decoration: none; justify-content: flex-start; padding-left: 1.25rem;">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Previous Results
+                </a>
+            </div>
+            
+            <div class="status-panel">
+                <h3>System Status</h3>
+                
+                <div class="status-item" id="pdf-status">
+                    <div class="status-info">
+                        <span class="status-label">Fee PDF File</span>
+                        <span class="status-val" id="pdf-val">Checking...</span>
+                    </div>
+                    <div class="status-indicator warning" id="pdf-dot"></div>
+                </div>
+                
+                <div class="status-item" id="api-status">
+                    <div class="status-info">
+                        <span class="status-label">Gemini API Key</span>
+                        <span class="status-val" id="api-val">Checking...</span>
+                    </div>
+                    <div class="status-indicator warning" id="api-dot"></div>
+                </div>
+            </div>
+
+            <div class="instructions-panel">
+                <h3>Instructions</h3>
+                <p>Ensure that <code>fee_structure.pdf</code> is in the project directory.</p>
+                <p>The agent will answer questions <strong>only</strong> based on the facts provided in that file.</p>
+                <p>Configure your API Key in your environment or a <code>.env</code> file:</p>
+                <pre><code>GEMINI_API_KEY=your_key_here</code></pre>
+            </div>
+            
+            <div class="sidebar-footer">
+                <button id="clear-chat-btn" class="secondary-btn">
+                    <i class="fa-solid fa-trash-can"></i> Clear Conversation
+                </button>
+                <a href="{{ url_for('logout') }}" class="secondary-btn logout-btn">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-area">
+            <header class="chat-header">
+                <div class="header-left">
+                    <button class="menu-toggle" id="menu-toggle">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div>
+                        <h1>V.S.B. Fee Assistant</h1>
+                        <p class="subtitle">V.S.B. Engineering College, Karur • Powered by Gemini AI</p>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <span class="badge" id="mode-badge">Strict Mode</span>
+                </div>
+            </header>
+
+            <!-- Chat messages container -->
+            <div class="chat-messages" id="chat-messages">
+                <!-- Welcome Message -->
+                <div class="message system-msg animate-fade-in">
+                    <div class="message-avatar">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>Hello! I am your <strong>Fee Inquiry Agent</strong>. I can assist you with any questions regarding tuition, payments, schedule of fees, or other charges from the uploaded PDF document.</p>
+                        <p>What fee details would you like to inquire about today?</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Banner -->
+            <div class="error-banner hidden" id="error-banner">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span id="error-text">An error occurred.</span>
+                <button class="close-error" onclick="hideError()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Input area -->
+            <div class="chat-input-container">
+                <form id="chat-form" class="chat-form">
+                    <textarea 
+                        id="user-input" 
+                        placeholder="Type your fee inquiry here... (e.g. 'What is the admission fee?')" 
+                        rows="1"
+                        required></textarea>
+                    <button type="submit" id="send-btn" class="send-btn">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // DOM Elements
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        const chatMessages = document.getElementById('chat-messages');
+        const clearBtn = document.getElementById('clear-chat-btn');
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        const errorBanner = document.getElementById('error-banner');
+        const errorText = document.getElementById('error-text');
+        
+        // Status indicator elements
+        const pdfVal = document.getElementById('pdf-val');
+        const pdfDot = document.getElementById('pdf-dot');
+        const apiVal = document.getElementById('api-val');
+        const apiDot = document.getElementById('api-dot');
+
+        // Conversation history state
+        let conversationHistory = [];
+
+        // Auto-resize textarea to fit content
+        userInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+            // Limit max height to 150px
+            if (this.scrollHeight > 150) {
+                this.style.overflowY = 'auto';
+                this.style.height = '150px';
+            } else {
+                this.style.overflowY = 'hidden';
+            }
+        });
+
+        // Handle Enter key for submit (Shift+Enter for newline)
+        userInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                chatForm.dispatchEvent(new Event('submit'));
+            }
+        });
+
+        // Toggle Sidebar on mobile
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(e.target) && !menuToggle.contains(e.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+
+        // Hide Error Banner
+        function hideError() {
+            errorBanner.classList.add('hidden');
+        }
+
+        // Show Error Banner
+        function showError(msg) {
+            errorText.textContent = msg;
+            errorBanner.classList.remove('hidden');
+        }
+
+        // Update system status badges from API
+        async function updateStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                // PDF Status
+                if (data.pdf_loaded) {
+                    pdfVal.textContent = "Loaded";
+                    pdfDot.className = "status-indicator success";
+                    pdfVal.classList.remove('warning-text');
+                    pdfVal.classList.add('success-text');
+                } else {
+                    pdfVal.textContent = "Missing";
+                    pdfDot.className = "status-indicator danger";
+                    pdfVal.classList.remove('success-text');
+                    pdfVal.classList.add('danger-text');
+                }
+
+                // API Status
+                if (data.api_key_set) {
+                    apiVal.textContent = "Configured";
+                    apiDot.className = "status-indicator success";
+                    apiVal.classList.remove('danger-text');
+                    apiVal.classList.add('success-text');
+                } else {
+                    apiVal.textContent = "Missing";
+                    apiDot.className = "status-indicator danger";
+                    apiVal.classList.remove('success-text');
+                    apiVal.classList.add('danger-text');
+                }
+            } catch (err) {
+                console.error("Error fetching status:", err);
+            }
+        }
+
+        // Format Gemini text responses (simple bold, bullets, linebreaks rendering)
+        function formatResponseText(text) {
+            // Escape HTML characters
+            let escaped = text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+            
+            // Format bold: **text** -> <strong>text</strong>
+            escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            // Format markdown bullets: * or - -> list items
+            const lines = escaped.split('\n');
+            let inList = false;
+            let formattedHtml = '';
+            
+            lines.forEach(line => {
+                const trimmed = line.trim();
+                if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
+                    if (!inList) {
+                        formattedHtml += '<ul class="chat-list">';
+                        inList = true;
+                    }
+                    formattedHtml += `<li>${trimmed.substring(2)}</li>`;
+                } else {
+                    if (inList) {
+                        formattedHtml += '</ul>';
+                        inList = false;
+                    }
+                    formattedHtml += `<p>${line}</p>`;
+                }
+            });
+            
+            if (inList) {
+                formattedHtml += '</ul>';
+            }
+            
+            return formattedHtml.replace(/<p><\/p>/g, '<br>');
+        }
+
+        // Append Message to UI
+        function appendMessage(sender, text, isHtml = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender === 'user' ? 'user-msg' : 'agent-msg'} animate-fade-in`;
+            
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = 'message-avatar';
+            avatarDiv.innerHTML = sender === 'user' ? '<i class="fa-solid fa-user"></i>' : '<i class="fa-solid fa-robot"></i>';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            
+            if (isHtml) {
+                contentDiv.innerHTML = text;
+            } else {
+                contentDiv.innerHTML = formatResponseText(text);
+            }
+            
+            messageDiv.appendChild(avatarDiv);
+            messageDiv.appendChild(contentDiv);
+            chatMessages.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Show Typing Indicator
+        let typingIndicator = null;
+        function showTypingIndicator() {
+            if (typingIndicator) return;
+            
+            typingIndicator = document.createElement('div');
+            typingIndicator.className = 'message agent-msg typing-indicator-container animate-fade-in';
+            
+            typingIndicator.innerHTML = `
+                <div class="message-avatar">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    <div class="typing-bubble">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(typingIndicator);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Remove Typing Indicator
+        function removeTypingIndicator() {
+            if (typingIndicator) {
+                typingIndicator.remove();
+                typingIndicator = null;
+            }
+        }
+
+        // Handle Chat Submission
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const text = userInput.value.trim();
+            if (!text) return;
+            
+            // Clear input and reset height
+            userInput.value = '';
+            userInput.style.height = 'auto';
+            hideError();
+
+            // Append user message
+            appendMessage('user', text);
+
+            // Show agent typing
+            showTypingIndicator();
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: text,
+                        history: conversationHistory
+                    })
+                });
+
+                const data = await response.json();
+                removeTypingIndicator();
+
+                if (response.ok) {
+                    // Update internal history state
+                    conversationHistory.push({ role: 'user', content: text });
+                    conversationHistory.push({ role: 'model', content: data.reply });
+                    
+                    // Render reply
+                    appendMessage('agent', data.reply);
+                } else {
+                    showError(data.error || "An error occurred while generating a response.");
+                }
+            } catch (err) {
+                removeTypingIndicator();
+                showError("Network error. Make sure your Flask backend is running.");
+                console.error("Chat error:", err);
+            }
+        });
+
+        // Handle Clear Chat
+        clearBtn.addEventListener('click', () => {
+            conversationHistory = [];
+            // Remove all messages except the first system one
+            const welcomeMsg = chatMessages.firstElementChild;
+            chatMessages.innerHTML = '';
+            if (welcomeMsg) {
+                chatMessages.appendChild(welcomeMsg);
+            }
+            hideError();
+        });
+
+        // Initialize status check and status interval polling
+        updateStatus();
+        setInterval(updateStatus, 8000);
+    </script>
+</body>
+</html>

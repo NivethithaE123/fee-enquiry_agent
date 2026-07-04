@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scholarship Checker - V.S.B. Engineering College</title>
+    <!-- Google Fonts for premium typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for beautiful icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <h2>V.S.B. Agent</h2>
+            </div>
+            
+            <!-- Student Profile Section -->
+            <div class="student-profile">
+                <div class="profile-avatar">
+                    <i class="fa-solid fa-user-graduate"></i>
+                </div>
+                <div class="profile-info">
+                    <h3 class="student-name">{{ student_name }}</h3>
+                    <p class="student-dept">{{ student_dept }}</p>
+                </div>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <div class="nav-menu" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem; flex-grow: 1;">
+                <a href="{{ url_for('index') }}" class="secondary-btn" style="text-decoration: none; justify-content: flex-start; padding-left: 1.25rem;">
+                    <i class="fa-solid fa-comments"></i> AI Fee Chatbot
+                </a>
+                <a href="{{ url_for('scholarship_checker') }}" class="secondary-btn active-nav" style="text-decoration: none; justify-content: flex-start; padding-left: 1.25rem; background: var(--accent-gradient); color: white; border: none;">
+                    <i class="fa-solid fa-award"></i> Scholarship Checker
+                </a>
+                <a href="{{ url_for('previous_scholarships') }}" class="secondary-btn" style="text-decoration: none; justify-content: flex-start; padding-left: 1.25rem;">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Previous Results
+                </a>
+            </div>
+            
+            <div class="sidebar-footer">
+                <a href="{{ url_for('logout') }}" class="secondary-btn logout-btn" style="text-decoration: none;">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="chat-area">
+            <header class="chat-header">
+                <div class="header-left">
+                    <button class="menu-toggle" id="menu-toggle">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div>
+                        <h1>Scholarship Eligibility Checker</h1>
+                        <p class="subtitle">V.S.B. Engineering College, Karur • Calculate your options</p>
+                    </div>
+                </div>
+            </header>
+
+            <div class="chat-messages" style="display: flex; flex-direction: column; gap: 2rem; overflow-y: auto; padding: 2rem;">
+                
+                <!-- Main Grid Layout for Form & Result -->
+                <div class="checker-grid" style="display: grid; grid-template-columns: 1fr; gap: 2rem; width: 100%; max-width: 1000px; margin: 0 auto;">
+                    
+                    <!-- Left Side: Eligibility Input Form -->
+                    <div class="auth-card" style="width: 100%; padding: 2rem; border-radius: 20px; box-shadow: var(--shadow-md);">
+                        <h2 style="font-family: var(--font-heading); font-size: 1.35rem; margin-bottom: 1.5rem; color: white;">
+                            <i class="fa-solid fa-pen-to-square" style="color: var(--accent-color); margin-right: 0.5rem;"></i> Eligibility Criteria Form
+                        </h2>
+                        
+                        {% if error %}
+                        <div class="auth-alert error-alert animate-fade-in" style="margin-bottom: 1.5rem;">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            <span>{{ error }}</span>
+                        </div>
+                        {% endif %}
+
+                        <form action="{{ url_for('scholarship_checker') }}" method="POST" class="auth-form" style="gap: 1.5rem;">
+                            
+                            <!-- Auto-filled readonly student info -->
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Student Name</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-user input-icon"></i>
+                                        <input type="text" value="{{ student_name }}" readonly style="opacity: 0.7; cursor: not-allowed;">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Register Number</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-id-card input-icon"></i>
+                                        <input type="text" value="{{ student_id }}" readonly style="opacity: 0.7; cursor: not-allowed;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Department</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-graduation-cap input-icon"></i>
+                                    <input type="text" value="{{ student_dept }}" readonly style="opacity: 0.7; cursor: not-allowed;">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Academic Year</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-calendar input-icon"></i>
+                                        <input type="text" value="{{ student_year }}" readonly style="opacity: 0.7; cursor: not-allowed;">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Semester</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-hourglass-half input-icon"></i>
+                                        <input type="text" value="{{ student_sem }}" readonly style="opacity: 0.7; cursor: not-allowed;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 0.5rem 0;">
+
+                            <!-- Dynamic fields to check eligibility -->
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="family_income">Annual Family Income (₹)</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-indian-rupee-sign input-icon"></i>
+                                        <input 
+                                            type="number" 
+                                            id="family_income" 
+                                            name="family_income" 
+                                            placeholder="e.g. 150000" 
+                                            required 
+                                            min="0">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="community">Community</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-users input-icon"></i>
+                                        <select id="community" name="community" required>
+                                            <option value="" disabled selected>Select Community</option>
+                                            <option value="BC">BC</option>
+                                            <option value="MBC">MBC</option>
+                                            <option value="SC">SC</option>
+                                            <option value="ST">ST</option>
+                                            <option value="OC">OC</option>
+                                            <option value="Others">Others</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-row" style="align-items: center;">
+                                <div class="form-group">
+                                    <label>First Graduate in Family?</label>
+                                    <div style="display: flex; gap: 2rem; margin-top: 0.5rem;">
+                                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text-primary);">
+                                            <input type="radio" name="first_graduate" value="Yes" required style="width: 18px; height: 18px; accent-color: var(--accent-color);"> Yes
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text-primary);">
+                                            <input type="radio" name="first_graduate" value="No" required checked style="width: 18px; height: 18px; accent-color: var(--accent-color);"> No
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="cgpa">Current CGPA</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-chart-line input-icon"></i>
+                                        <input 
+                                            type="number" 
+                                            id="cgpa" 
+                                            name="cgpa" 
+                                            placeholder="e.g. 8.7" 
+                                            step="0.01" 
+                                            min="0.0" 
+                                            max="10.0" 
+                                            required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="auth-submit-btn" style="margin-top: 1rem;">
+                                <i class="fa-solid fa-calculator"></i> Check Eligibility
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Right Side: Eligibility Results (Conditional Render) -->
+                    {% if result %}
+                    <div class="auth-card result-panel animate-fade-in" style="width: 100%; padding: 2rem; border-radius: 20px; border: 1px solid rgba(99, 102, 241, 0.25); background-color: rgba(19, 23, 41, 0.85); box-shadow: var(--shadow-lg);">
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <div style="width: 60px; height: 60px; border-radius: 50%; background-color: rgba(99, 102, 241, 0.15); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 0.75rem;">
+                                <i class="fa-solid fa-circle-check" style="color: var(--accent-color); font-size: 2rem;"></i>
+                            </div>
+                            <h2 style="font-family: var(--font-heading); font-size: 1.5rem; color: white;">Scholarship Eligibility Result</h2>
+                        </div>
+
+                        <!-- Student Details -->
+                        <div class="result-details" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem 1rem; font-size: 0.875rem; line-height: 1.5;">
+                            <div><span style="color: var(--text-secondary);">Student Name:</span> <strong style="color: white; display: block;">{{ result.name }}</strong></div>
+                            <div><span style="color: var(--text-secondary);">Register Number:</span> <strong style="color: white; display: block;">{{ result.student_id }}</strong></div>
+                            <div style="grid-column: span 2;"><span style="color: var(--text-secondary);">Department:</span> <strong style="color: white; display: block;">{{ result.department }}</strong></div>
+                            <div><span style="color: var(--text-secondary);">Academic Year:</span> <strong style="color: white; display: block;">{{ result.year }}</strong></div>
+                            <div><span style="color: var(--text-secondary);">Semester:</span> <strong style="color: white; display: block;">{{ result.semester }}</strong></div>
+                        </div>
+
+                        <!-- Eligible Section -->
+                        <div class="eligible-box" style="margin-bottom: 1.5rem;">
+                            <h3 style="font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--success); margin-bottom: 0.75rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fa-solid fa-square-check"></i> Eligible Scholarships
+                            </h3>
+                            {% if result.eligible %}
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                    {% for schol in result.eligible %}
+                                        <div style="display: flex; align-items: center; gap: 0.75rem; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); padding: 0.75rem 1rem; border-radius: 10px; color: white; font-weight: 500;">
+                                            <i class="fa-solid fa-check" style="color: var(--success); font-size: 1.1rem;"></i> {{ schol }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p style="color: var(--text-secondary); font-style: italic; font-size: 0.9rem; padding: 0.5rem 0;">You are currently not eligible for any scholarship based on the provided information.</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Not Eligible Section -->
+                        <div class="not-eligible-box" style="margin-bottom: 1.5rem;">
+                            <h3 style="font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--danger); margin-bottom: 0.75rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fa-solid fa-square-xmark"></i> Not Eligible Scholarships
+                            </h3>
+                            {% if result.not_eligible %}
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                    {% for schol in result.not_eligible %}
+                                        <div style="display: flex; align-items: center; gap: 0.75rem; background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.15); padding: 0.75rem 1rem; border-radius: 10px; color: var(--text-secondary);">
+                                            <i class="fa-solid fa-xmark" style="color: var(--danger); font-size: 1.1rem;"></i> {{ schol }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p style="color: var(--text-secondary); font-style: italic; font-size: 0.9rem; padding-left: 0.5rem;">None</p>
+                            {% endif %}
+                        </div>
+
+                        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 1.5rem 0;">
+
+                        <!-- Congrats Callout -->
+                        <div class="result-summary" style="text-align: center; padding: 0.5rem 0;">
+                            {% if result.eligible_count > 0 %}
+                                <h3 style="font-family: var(--font-heading); color: white; font-size: 1.25rem; margin-bottom: 0.25rem;">Congratulations!</h3>
+                                <p style="color: var(--text-secondary);">You are eligible for <strong>{{ result.eligible_count }}</strong> scholarship(s).</p>
+                            {% else %}
+                                <h3 style="font-family: var(--font-heading); color: var(--text-secondary); font-size: 1.25rem; margin-bottom: 0.25rem;">Ineligible</h3>
+                                <p style="color: var(--text-muted);">You are currently not eligible for any scholarship based on the provided information.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Toggle Sidebar on mobile
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        
+        if (menuToggle) {
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+            });
+        }
+    </script>
+</body>
+</html>

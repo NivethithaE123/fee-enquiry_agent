@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Previous Results - V.S.B. Engineering College</title>
+    <!-- Google Fonts for premium typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for beautiful icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <h2>V.S.B. Agent</h2>
+            </div>
+            
+            <!-- Student Profile Section -->
+            <div class="student-profile">
+                <div class="profile-avatar">
+                    <i class="fa-solid fa-user-graduate"></i>
+                </div>
+                <div class="profile-info">
+                    <h3 class="student-name">{{ student_name }}</h3>
+                    <p class="student-dept">{{ student_dept }}</p>
+                </div>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <div class="nav-menu" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem; flex-grow: 1;">
+                <a href="{{ url_for('index') }}" class="secondary-btn" style="text-decoration: none; justify-content: flex-start; padding-left: 1.25rem;">
+                    <i class="fa-solid fa-comments"></i> AI Fee Chatbot
+                </a>
+                <a href="{{ url_for('scholarship_checker') }}" class="secondary-btn" style="text-decoration: none; justify-content: flex-start; padding-left: 1.25rem;">
+                    <i class="fa-solid fa-award"></i> Scholarship Checker
+                </a>
+                <a href="{{ url_for('previous_scholarships') }}" class="secondary-btn active-nav" style="text-decoration: none; justify-content: flex-start; padding-left: 1.25rem; background: var(--accent-gradient); color: white; border: none;">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Previous Results
+                </a>
+            </div>
+            
+            <div class="sidebar-footer">
+                <a href="{{ url_for('logout') }}" class="secondary-btn logout-btn" style="text-decoration: none;">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="chat-area">
+            <header class="chat-header">
+                <div class="header-left">
+                    <button class="menu-toggle" id="menu-toggle">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div>
+                        <h1>Previous Eligibility Checks</h1>
+                        <p class="subtitle">V.S.B. Engineering College, Karur • Review your historical logs</p>
+                    </div>
+                </div>
+            </header>
+
+            <div class="chat-messages" style="display: flex; flex-direction: column; gap: 1.5rem; overflow-y: auto; padding: 2rem;">
+                <div style="width: 100%; max-width: 1000px; margin: 0 auto;">
+                    
+                    {% if results %}
+                        <!-- Responsive Table container -->
+                        <div class="history-table-container animate-fade-in" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 20px; overflow-x: auto; box-shadow: var(--shadow-md);">
+                            <table style="width: 100%; border-collapse: collapse; min-width: 800px; text-align: left; font-size: 0.9rem;">
+                                <thead>
+                                    <tr style="background-color: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border-color);">
+                                        <th style="padding: 1.25rem; color: white; font-weight: 600;">Date & Time</th>
+                                        <th style="padding: 1.25rem; color: white; font-weight: 600;">Details (Income/Comm)</th>
+                                        <th style="padding: 1.25rem; color: white; font-weight: 600; text-align: center;">CGPA</th>
+                                        <th style="padding: 1.25rem; color: white; font-weight: 600; text-align: center;">First Grad</th>
+                                        <th style="padding: 1.25rem; color: white; font-weight: 600;">Eligible Scholarships</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in results %}
+                                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.04); transition: var(--transition-smooth);" class="history-row">
+                                            <td style="padding: 1.25rem; color: var(--text-primary);">
+                                                <i class="fa-solid fa-clock" style="color: var(--text-muted); margin-right: 0.5rem; font-size: 0.85rem;"></i>
+                                                {{ row.timestamp }}
+                                            </td>
+                                            <td style="padding: 1.25rem;">
+                                                <span style="display: block; color: white; font-weight: 500;">₹{{ "{:,.0f}".format(row.family_income) }}</span>
+                                                <span style="display: block; font-size: 0.75rem; color: var(--text-secondary);">Community: {{ row.community }}</span>
+                                            </td>
+                                            <td style="padding: 1.25rem; text-align: center;">
+                                                <span class="badge" style="background: rgba(99, 102, 241, 0.15); border-color: rgba(99, 102, 241, 0.3); font-weight: 600;">{{ row.cgpa }}</span>
+                                            </td>
+                                            <td style="padding: 1.25rem; text-align: center; color: var(--text-primary);">
+                                                {% if row.first_graduate == 'Yes' %}
+                                                    <span style="color: var(--success); font-weight: 600;">Yes</span>
+                                                {% else %}
+                                                    <span style="color: var(--text-muted);">No</span>
+                                                {% endif %}
+                                            </td>
+                                            <td style="padding: 1.25rem;">
+                                                {% if row.eligible_scholarships %}
+                                                    <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                                                        {% for schol in row.eligible_scholarships.split(', ') %}
+                                                            <span style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.15); color: #a7f3d0; font-size: 0.75rem; padding: 0.3rem 0.65rem; border-radius: 6px; font-weight: 500; display: inline-flex; align-items: center; gap: 0.3rem;">
+                                                                <i class="fa-solid fa-check" style="font-size: 0.65rem; color: var(--success);"></i> {{ schol }}
+                                                            </span>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% else %}
+                                                    <span style="color: var(--danger); font-size: 0.8rem; font-style: italic;">No Eligible Scholarships</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <!-- Empty State Panel -->
+                        <div class="auth-card animate-fade-in" style="text-align: center; padding: 3.5rem 2rem; border-radius: 20px;">
+                            <div style="width: 70px; height: 70px; border-radius: 50%; background-color: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+                                <i class="fa-solid fa-receipt" style="color: var(--text-muted); font-size: 1.75rem;"></i>
+                            </div>
+                            <h2 style="font-family: var(--font-heading); font-size: 1.25rem; color: white; margin-bottom: 0.5rem;">No History Found</h2>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; max-width: 400px; margin: 0 auto 1.5rem auto; line-height: 1.5;">You haven't run any scholarship eligibility checks yet. Use the checker tool to find matching grants.</p>
+                            <a href="{{ url_for('scholarship_checker') }}" class="auth-submit-btn" style="text-decoration: none; display: inline-flex; width: auto; padding: 0.75rem 1.75rem;">
+                                <i class="fa-solid fa-award"></i> Check Eligibility Now
+                            </a>
+                        </div>
+                    {% endif %}
+                    
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Toggle Sidebar on mobile
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        
+        if (menuToggle) {
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+            });
+        }
+    </script>
+</body>
+</html>
