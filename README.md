@@ -9,14 +9,6 @@ A beautiful and modern Flask-based web application that acts as a strict **Fee I
 - **Persistent Chat History**: Supports multi-turn conversations by maintaining dialogue history.
 - **Robust Error Handling**: Gracefully handles missing PDF files, invalid API keys, and missing environment variables with user-friendly warnings and instructions.
 
-  
-* **Command Prompt (Windows):**
-  ```cmd
-  set GEMINI_API_KEY="your_actual_gemini_api_key_here"
-  ```
-  export GEMINI_API_KEY="your_actual_gemini_api_key_here"
-  ```
-
 ### 7. Run the REST API App
 ```
 https://abc-fee-ai-363219115391.asia-southeast1.run.app
