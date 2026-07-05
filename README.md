@@ -85,5 +85,5 @@ python app.py
 
 Open your browser and navigate to:
 ```
-http://127.0.0.1:5000
+https://vsb-fee-ai-363219115391.asia-southeast1.run.app
 ```
