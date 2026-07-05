@@ -85,5 +85,5 @@ python app.py
 
 Open your browser and navigate to:
 ```
-https://vsb-fee-ai-363219115391.asia-southeast1.run.app
+https://abc-fee-ai-363219115391.asia-southeast1.run.app
 ```
